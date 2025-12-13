@@ -67,34 +67,33 @@ def main():
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
     if choice == "Home":
-        st.subheader("Welcome! Please fill in your details")
+    st.subheader("Welcome! Please fill in your details")
 
-        name = st.text_input("Your Name")
-        field_of_study = st.selectbox(
-            "Field of Study",
-            ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"]
-        )
-        level = st.selectbox(
-            "Level",
-            ["Beginner", "Intermediate", "Advanced"]
-        )
-        duration = st.selectbox(
-            "Duration Preference",
-            ["Less than 1 month", "1-3 months", "3-6 months", "6+ months"]
-        )
-        mode = st.radio(
-            "Mode of Study",
-            ["Online", "Offline", "Hybrid"]
-        )
+    name = st.text_input("Your Name")
+    field_of_study = st.selectbox(
+        "Field of Study",
+        ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"]
+    )
+    level = st.selectbox(
+        "Level",
+        ["Beginner", "Intermediate", "Advanced"]
+    )
+    duration = st.selectbox(
+        "Duration Preference",
+        ["Less than 1 month", "1-3 months", "3-6 months", "6+ months"]
+    )
+    mode = st.radio(
+        "Mode of Study",
+        ["Online", "Offline", "Hybrid"]
+    )
 
-        if st.button("Submit Info"):
-            if name.strip() == "":
-                st.warning("Please enter your name")
-            else:
-                save_user_info(name, field_of_study, level, duration, mode)
-                st.success(f"Hello {name}! Your info has been saved.")
+    if st.button("Submit Info"):
+        if name.strip() == "":
+            st.warning("Please enter your name")
+        else:
+            save_user_info(name, field_of_study, level, duration, mode)
+            st.success(f"Hello {name}! Your info has been saved.")
 
-        st.dataframe(df.head(10))
 
     elif choice == "Recommend Courses":
         st.subheader("Recommend Courses")
@@ -154,4 +153,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
