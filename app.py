@@ -108,13 +108,10 @@ def main():
         if name.strip() == "":
             st.warning("Please enter your name")
         else:
-            # Save user info
             save_user_info(name, field_of_study, level, duration, mode)
             st.success(f"Hello {name}! Here are some recommended courses for you:")
 
-            # Combine user preferences into a search term
             search_term = f"{field_of_study} {level}"
-
             count_vect = CountVectorizer(stop_words="english")
             vectors = count_vect.fit_transform(df["combined_features"])
             search_vector = count_vect.transform([search_term])
@@ -137,16 +134,26 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
 
-    # View backend
-    st.subheader("📦 Backend: SQLite Database")
-    conn = get_db_connection()
-    courses_df = pd.read_sql("SELECT * FROM courses", conn)
-    st.dataframe(courses_df)
+    # Admin section for backend (hidden for normal users)
+    st.subheader("🔒 Admin Section")
+    show_admin = st.checkbox("Admin Login")
+    if show_admin:
+        password = st.text_input("Enter Admin Password", type="password")
+        if password == "YourSecurePassword":  # Change this to your actual password
+            st.success("Access granted! Backend data is visible.")
 
-    st.subheader("Registered Users")
-    users_df = pd.read_sql("SELECT * FROM users", conn)
-    st.dataframe(users_df)
-    conn.close()
+            # Show backend tables
+            conn = get_db_connection()
+            st.subheader("📦 Courses Database")
+            courses_df = pd.read_sql("SELECT * FROM courses", conn)
+            st.dataframe(courses_df)
+
+            st.subheader("Registered Users")
+            users_df = pd.read_sql("SELECT * FROM users", conn)
+            st.dataframe(users_df)
+            conn.close()
+        else:
+            st.error("Incorrect password. Access denied.")
 
     # About
     st.subheader("About")
