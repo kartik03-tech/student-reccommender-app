@@ -129,15 +129,17 @@ div.stButton > button:hover {
 
                 st.success("Recommended Courses")
 
-                for _, row in recommendations.iterrows():
-                    st.markdown(f"""
-                    ### 📘 {row['coursetitle']}
-                    **Subject:** {row['subject']}  
-                    **Level:** {row['level']}  
-                    **Price:** ${row['price']}  
-                    **Subscribers:** {row['num_subscribers']}
-                    ---
-                    """)
+              for _, row in recommendations.iterrows():
+    st.markdown(f"""
+    <div class="course-card">
+        <h4>📘 {row['coursetitle']}</h4>
+        <p><span class="highlight">Subject:</span> {row['subject']}</p>
+        <p><span class="highlight">Level:</span> {row['level']}</p>
+        <p><span class="highlight">Price:</span> ${row['price']}</p>
+        <p><span class="highlight">Subscribers:</span> {row['num_subscribers']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
             else:
                 st.warning("Please enter a search term")
@@ -162,4 +164,5 @@ div.stButton > button:hover {
 
 if __name__ == "__main__":
     main()
+
 
