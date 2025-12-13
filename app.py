@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 def load_data(data):
-    return pd.read_csv("data/course.csv")
+    return pd.read_csv("course.csv")
 
 
 def main():
@@ -84,3 +84,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
