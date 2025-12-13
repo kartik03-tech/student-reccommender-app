@@ -1,0 +1,31 @@
+course_id,coursetitle,subject,level,num_subscribers,num_reviews,num_lectures,content_duration,price,is_paid
+1,"Complete Python Bootcamp: From Zero to Data Scientist",Programming,Beginner Level,125000,28000,125,22.5,12.99,True
+2,"Advanced Machine Learning with TensorFlow & Keras",Data Science,Intermediate Level,89000,15000,98,18.2,19.99,True
+3,"Web Development Masterclass: HTML CSS JavaScript React",Web Development,All Levels,210000,45000,210,35.0,14.99,True
+4,"Data Analysis with Python Pandas & NumPy",Data Science,Beginner Level,95000,22000,85,16.5,11.99,True
+5,"The Complete Digital Marketing Course - 12 Courses in 1",Marketing,All Levels,340000,72000,320,48.0,15.99,True
+6,"SQL for Data Science: From Beginner to Expert",Databases,Intermediate Level,67000,12000,75,14.8,13.99,True
+7,"Machine Learning A-Z: Python & R in Data Science",Data Science,All Levels,450000,95000,420,62.5,19.99,True
+8,"React - The Complete Guide (Hooks, Context, Redux)",Web Development,Intermediate Level,180000,38000,195,32.0,16.99,True
+9,"The Web Developer Bootcamp 2023",Web Development,Beginner Level,890000,210000,640,85.0,20.99,True
+10,"Python for Finance and Algorithmic Trading",Finance,Expert Level,23000,4500,112,20.5,18.99,True
+11,"Complete AWS Certification Course",Cloud Computing,All Levels,120000,25000,140,28.0,17.99,True
+12,"Deep Learning: Neural Networks and Deep Learning",Data Science,Expert Level,34000,6800,95,19.2,22.99,True
+13,"100 Days of Code: The Complete Python Pro Bootcamp",Programming,All Levels,420000,98000,600,90.0,21.99,True
+14,"Docker and Kubernetes: The Complete Guide",DevOps,Intermediate Level,56000,11000,88,17.5,15.99,True
+15,"The Complete 2023 iOS App Development Bootcamp",Mobile Development,Beginner Level,78000,19000,165,31.0,19.99,True
+16,"Modern JavaScript From The Beginning",Programming,Beginner Level,67000,14000,120,22.0,14.99,True
+17,"The Complete Node.js Developer Course (3rd Edition)",Backend Development,Intermediate Level,210000,47000,235,38.5,18.99,True
+18,"Python Django - The Practical Guide",Backend Development,All Levels,89000,21000,145,26.0,16.99,True
+19,"Angular - The Complete Guide (2023 Edition)",Web Development,Intermediate Level,156000,34000,280,45.5,19.99,True
+20,"Microservices with Spring Boot and Spring Cloud",Backend Development,Expert Level,28000,5200,98,21.0,20.99,True
+21,"The Complete Financial Analyst Course 2023",Finance,All Levels,98000,23000,210,38.0,17.99,True
+22,"Cybersecurity: Complete Course for Beginners to Advanced",Cybersecurity,All Levels,45000,8900,156,29.5,16.99,True
+23,"Unity Game Development: Create 2D and 3D Games",Game Development,Beginner Level,123000,29000,198,34.0,18.99,True
+24,"Complete Flutter Development Bootcamp with Dart",Mobile Development,Intermediate Level,67000,15000,142,27.5,17.99,True
+25,"The Complete UI/UX Design Bootcamp",UI/UX Design,All Levels,89000,21000,165,31.0,19.99,True
+26,"Blockchain and Bitcoin Fundamentals",Cryptocurrency,Beginner Level,34000,7200,85,16.0,14.99,True
+27,"Complete MATLAB Programming + MATLAB Simulink",Engineering,Expert Level,21000,4500,112,22.0,18.99,True
+28,"The Complete Salesforce Course: Admin & Development",Salesforce,All Levels,45000,9800,210,39.0,20.99,True
+29,"Photoshop CC Masterclass: Complete Photoshop Course",Graphic Design,Beginner Level,123000,34000,198,36.0,16.99,True
+30,"Advanced Excel Formulas and Functions",Business Productivity,Intermediate Level,89000,21000,145,26.5,12.99,True
