@@ -1,12 +1,22 @@
 import streamlit as st
 import streamlit.components.v1 as stc
 import pandas as pd
+import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-def load_data(data):
-    return pd.read_csv("course.csv")
+# ---------- DATABASE CONNECTION ----------
+def get_db_connection():
+    conn = sqlite3.connect("courses.db", check_same_thread=False)
+    return conn
+
+
+def load_data():
+    conn = get_db_connection()
+    df = pd.read_sql("SELECT * FROM courses", conn)
+    conn.close()
+    return df
 
 
 def main():
@@ -15,7 +25,8 @@ def main():
     menu = ["Home", "Recommend Courses", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
 
-    df = load_data("course.csv")
+    # Load data from SQL database
+    df = load_data()
 
     # Combine text features
     df["combined_features"] = (
@@ -79,9 +90,11 @@ def main():
 
     else:
         st.subheader("About")
-        st.write("This application recommends courses based on user interests using cosine similarity.")
+        st.write(
+            "This application recommends courses using an SQL backend (SQLite) "
+            "and cosine similarity-based content filtering."
+        )
 
 
 if __name__ == "__main__":
     main()
-
