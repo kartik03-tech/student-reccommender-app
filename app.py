@@ -4,7 +4,6 @@ import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ---------- DATABASE CONNECTION ----------
 def get_db_connection():
     conn = sqlite3.connect("courses.db", check_same_thread=False)
     return conn
@@ -15,73 +14,88 @@ def load_data():
     conn.close()
     return df
 
+def save_user_info(name, field_of_study, level, duration, mode):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
+        )
+    """)
+    cursor.execute("""
+        INSERT INTO users (name, field_of_study, level, duration, mode)
+        VALUES (?, ?, ?, ?, ?)
+    """, (name, field_of_study, level, duration, mode))
+    conn.commit()
+    conn.close()
+
 def main():
     st.title("Course Recommendation System")
     st.markdown("""
     <style>
-    /* Page background */
     .stApp {
         background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
         color: white;
     }
-    /* Title */
-    h1 {
-        color: #00e5ff;
-        text-align: center;
-    }
-    /* Sub headers */
-    h2, h3 {
-        color: #00e5ff;
-    }
-    /* Input box */
-    input {
-        border-radius: 10px !important;
-        padding: 10px !important;
-    }
-    /* Button */
+    h1 { color: #00e5ff; text-align: center; }
+    h2, h3 { color: #00e5ff; }
+    input { border-radius: 10px !important; padding: 10px !important; }
     div.stButton > button {
-        background-color: #00e5ff;
-        color: black;
-        border-radius: 10px;
-        padding: 0.6em 1.2em;
-        font-weight: bold;
-        border: none;
+        background-color: #00e5ff; color: black; border-radius: 10px;
+        padding: 0.6em 1.2em; font-weight: bold; border: none;
     }
-    div.stButton > button:hover {
-        background-color: #00bcd4;
-        color: white;
-    }
-    /* Course card */
+    div.stButton > button:hover { background-color: #00bcd4; color: white; }
     .course-card {
         background-color: rgba(255, 255, 255, 0.08);
-        padding: 18px;
-        border-radius: 15px;
-        margin-bottom: 15px;
+        padding: 18px; border-radius: 15px; margin-bottom: 15px;
         box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
     }
-    /* Highlight text */
-    .highlight {
-        color: #00e5ff;
-        font-weight: bold;
-    }
+    .highlight { color: #00e5ff; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ✅ Menu
     menu = ["Home", "Recommend Courses", "View Backend", "About"]
     st.sidebar.title("🎓 Navigation")
     choice = st.sidebar.radio("Go to", menu)
 
-    # Load data from SQL database
     df = load_data()
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
-    # ---------- HOME ----------
     if choice == "Home":
-        st.subheader("Home")
+        st.subheader("Welcome! Please fill in your details")
+
+        name = st.text_input("Your Name")
+        field_of_study = st.selectbox(
+            "Field of Study",
+            ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"]
+        )
+        level = st.selectbox(
+            "Level",
+            ["Beginner", "Intermediate", "Advanced"]
+        )
+        duration = st.selectbox(
+            "Duration Preference",
+            ["Less than 1 month", "1-3 months", "3-6 months", "6+ months"]
+        )
+        mode = st.radio(
+            "Mode of Study",
+            ["Online", "Offline", "Hybrid"]
+        )
+
+        if st.button("Submit Info"):
+            if name.strip() == "":
+                st.warning("Please enter your name")
+            else:
+                save_user_info(name, field_of_study, level, duration, mode)
+                st.success(f"Hello {name}! Your info has been saved.")
+
         st.dataframe(df.head(10))
 
-    # ---------- RECOMMEND ----------
     elif choice == "Recommend Courses":
         st.subheader("Recommend Courses")
 
@@ -106,7 +120,6 @@ def main():
 
                 st.success("Recommended Courses")
 
-                # ✅ Corrected indentation
                 for _, row in recommendations.iterrows():
                     st.markdown(f"""
                     <div class="course-card">
@@ -120,15 +133,18 @@ def main():
             else:
                 st.warning("Please enter a search term")
 
-    # ---------- VIEW BACKEND ----------
     elif choice == "View Backend":
         st.subheader("📦 Backend: SQLite Database")
         conn = get_db_connection()
         courses_df = pd.read_sql("SELECT * FROM courses", conn)
         st.dataframe(courses_df)
+
+        st.subheader("Registered Users")
+        users_df = pd.read_sql("SELECT * FROM users", conn)
+        st.dataframe(users_df)
+
         conn.close()
 
-    # ---------- ABOUT ----------
     else:
         st.subheader("About")
         st.write(
@@ -138,3 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
