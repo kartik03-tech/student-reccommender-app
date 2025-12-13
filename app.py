@@ -29,7 +29,7 @@ def save_user_info(name, field_of_study, level, duration, mode):
             mode TEXT
         )
     """)
-    # Insert user info
+    # Insert user info (hidden from Streamlit users)
     cursor.execute("""
         INSERT INTO users (name, field_of_study, level, duration, mode)
         VALUES (?, ?, ?, ?, ?)
@@ -37,28 +37,11 @@ def save_user_info(name, field_of_study, level, duration, mode):
     conn.commit()
     conn.close()
 
-# Ensure users table exists before reading
-def ensure_users_table():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            field_of_study TEXT,
-            level TEXT,
-            duration TEXT,
-            mode TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
 # ----------------- STREAMLIT APP -----------------
 def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
-    
+
     # ----------------- SIDEBAR -----------------
     st.sidebar.title("💡 About Us")
     st.sidebar.markdown("""
@@ -84,7 +67,7 @@ Welcome to **Course Recommender**!
 
     # ----------------- USER INPUT -----------------
     st.subheader("Welcome! Fill in your details to get recommendations")
-    
+
     df = load_courses()
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
@@ -98,7 +81,7 @@ Welcome to **Course Recommender**!
         if not name.strip():
             st.warning("Please enter your name")
         else:
-            # Automatically save user data to SQL
+            # Save user info to SQL (hidden from Streamlit)
             save_user_info(name, field_of_study, level, duration, mode)
             st.success(f"Hello {name}! Here are some recommended courses:")
 
@@ -125,26 +108,9 @@ Welcome to **Course Recommender**!
                     </div>
                     """, unsafe_allow_html=True)
 
-    # ----------------- SECURE ADMIN BACKEND -----------------
-    st.subheader("🔒 Admin Section")
-    show_admin = st.checkbox("Admin Login")
-    if show_admin:
-        password = st.text_input("Enter Admin Password", type="password")
-        if password == "K@rtik@12":  
-            st.success("Access granted! Backend data is visible.")
-            
-            # Ensure users table exists before reading
-            ensure_users_table()
-            
-            conn = get_db_connection()
-            st.subheader("📦 Courses Database")
-            st.dataframe(pd.read_sql("SELECT * FROM courses", conn))
-
-            st.subheader("Registered Users")
-            st.dataframe(pd.read_sql("SELECT * FROM users", conn))
-            conn.close()
-        else:
-            st.error("Incorrect password. Access denied.")
+    # ----------------- BACKEND HIDDEN -----------------
+    # Removed admin backend from Streamlit to hide all SQL tables
+    # Data is securely stored in 'courses.db' and can be accessed only via SQLite externally
 
 if __name__ == "__main__":
     main()
