@@ -22,19 +22,9 @@ def load_data():
 def main():
     st.title("Course Recommendation System")
 
-    menu = ["Home", "Recommend Courses", "About"]
+    # ✅ Menu (View Backend added)
+    menu = ["Home", "Recommend Courses", "View Backend", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
-    elif choice == "View Backend":
-    st.subheader("📦 Backend: SQLite Database")
-
-    conn = get_db_connection()
-
-    st.write("### Courses Table")
-    courses_df = pd.read_sql("SELECT * FROM courses", conn)
-    st.dataframe(courses_df)
-
-    conn.close()
-
 
     # Load data from SQL database
     df = load_data()
@@ -46,10 +36,12 @@ def main():
         df["level"]
     )
 
+    # ---------- HOME ----------
     if choice == "Home":
         st.subheader("Home")
         st.dataframe(df.head(10))
 
+    # ---------- RECOMMEND ----------
     elif choice == "Recommend Courses":
         st.subheader("Recommend Courses")
 
@@ -64,22 +56,15 @@ def main():
 
         if st.button("Recommend"):
             if search_term:
-                # Vectorization
                 count_vect = CountVectorizer(stop_words="english")
                 vectors = count_vect.fit_transform(df["combined_features"])
-
-                # Search term vector
                 search_vector = count_vect.transform([search_term])
 
-                # Cosine similarity
                 similarity_scores = cosine_similarity(
                     search_vector, vectors
                 ).flatten()
 
-                # Attach similarity scores
                 df["similarity"] = similarity_scores
-
-                # Sort and get top recommendations
                 recommendations = df.sort_values(
                     by="similarity", ascending=False
                 ).head(num_of_rec)
@@ -99,6 +84,16 @@ def main():
             else:
                 st.warning("Please enter a search term")
 
+    # ---------- VIEW BACKEND ----------
+    elif choice == "View Backend":
+        st.subheader("📦 Backend: SQLite Database")
+
+        conn = get_db_connection()
+        courses_df = pd.read_sql("SELECT * FROM courses", conn)
+        st.dataframe(courses_df)
+        conn.close()
+
+    # ---------- ABOUT ----------
     else:
         st.subheader("About")
         st.write(
@@ -109,4 +104,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
