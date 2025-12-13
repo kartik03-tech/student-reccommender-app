@@ -34,6 +34,23 @@ def save_user_info(name, field_of_study, level, duration, mode):
     conn.commit()
     conn.close()
 
+def ensure_users_table():
+    """Make sure users table exists so pd.read_sql won't fail."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
 def main():
     st.title("Course Recommendation System")
     st.markdown("""
@@ -58,6 +75,9 @@ def main():
     .highlight { color: #00e5ff; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
+
+    # Ensure the users table exists
+    ensure_users_table()
 
     st.subheader("Welcome! Please fill in your details to get course recommendations")
 
