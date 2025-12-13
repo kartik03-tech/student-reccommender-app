@@ -3,14 +3,30 @@ import pandas as pd
 import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import os
 
-# ----------------- DATABASE PATH (SAME DB AS CSV SCRIPT) -----------------
+# ----------------- DATABASE PATH -----------------
 DB_PATH = "courses.db"
 
 # ----------------- DATABASE FUNCTIONS -----------------
 def get_db_connection():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
+
+def ensure_users_table():
+    """Ensure users table exists (IMPORTANT FIX)"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
 def load_courses():
     conn = get_db_connection()
@@ -33,8 +49,16 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
 
+    # ✅ ENSURE users table exists (CRITICAL LINE)
+    ensure_users_table()
+
     # Load courses from existing DB
-    df = load_courses()
+    try:
+        df = load_courses()
+    except Exception as e:
+        st.error("Courses table not found in database.")
+        st.stop()
+
     df["combined_features"] = (
         df["coursetitle"] + " " + df["subject"] + " " + df["level"]
     )
@@ -58,9 +82,13 @@ def main():
             st.warning("Please enter your name")
             return
 
-        # Save user data
-        save_user_info(name, field_of_study, level, duration, mode)
-        st.success("User data saved successfully ✅")
+        # Save user data safely
+        try:
+            save_user_info(name, field_of_study, level, duration, mode)
+            st.success("User data saved successfully ✅")
+        except Exception as e:
+            st.error("Failed to save user data.")
+            st.stop()
 
         # Recommendation logic
         search_term = f"{field_of_study} {level}"
