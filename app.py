@@ -21,10 +21,68 @@ def load_data():
 
 def main():
     st.title("Course Recommendation System")
+    st.markdown("""
+<style>
+/* Page background */
+.stApp {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+}
+
+/* Title */
+h1 {
+    color: #00e5ff;
+    text-align: center;
+}
+
+/* Sub headers */
+h2, h3 {
+    color: #00e5ff;
+}
+
+/* Input box */
+input {
+    border-radius: 10px !important;
+    padding: 10px !important;
+}
+
+/* Button */
+div.stButton > button {
+    background-color: #00e5ff;
+    color: black;
+    border-radius: 10px;
+    padding: 0.6em 1.2em;
+    font-weight: bold;
+    border: none;
+}
+
+div.stButton > button:hover {
+    background-color: #00bcd4;
+    color: white;
+}
+
+/* Course card */
+.course-card {
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 18px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+}
+
+/* Highlight text */
+.highlight {
+    color: #00e5ff;
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
     # ✅ Menu (View Backend added)
     menu = ["Home", "Recommend Courses", "View Backend", "About"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    st.sidebar.title("🎓 Navigation")
+    choice = st.sidebar.radio("Go to", menu)
 
     # Load data from SQL database
     df = load_data()
@@ -104,3 +162,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
