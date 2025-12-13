@@ -5,13 +5,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import os
 
-# ----------------- DATABASE PATH -----------------
-DB_PATH = os.path.join(os.getcwd(), "courses.db")  # ensures single DB file
+# ----------------- DATABASE PATH (FIXED) -----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "courses.db")
 
 # ----------------- DATABASE FUNCTIONS -----------------
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    return conn
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 def create_courses_table():
     conn = get_db_connection()
@@ -57,23 +57,11 @@ def insert_sample_courses():
             ("Business Analytics", "Business", "Intermediate", 150, 700),
             ("Art History Basics", "Arts", "Beginner", 30, 300)
         ]
-        cursor.executemany(
-            "INSERT INTO courses (coursetitle, subject, level, price, num_subscribers) VALUES (?, ?, ?, ?, ?)",
-            sample_data
-        )
-    conn.commit()
-    conn.close()
-
-def insert_test_user():
-    """Insert a test user so users table is visible in SQLite immediately."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM users")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("""
-            INSERT INTO users (name, field_of_study, level, duration, mode)
+        cursor.executemany("""
+            INSERT INTO courses 
+            (coursetitle, subject, level, price, num_subscribers) 
             VALUES (?, ?, ?, ?, ?)
-        """, ("Test User", "Data Science", "Beginner", "1-3 months", "Online"))
+        """, sample_data)
     conn.commit()
     conn.close()
 
@@ -98,44 +86,26 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
 
-    # ----------------- DATABASE SETUP -----------------
+    # Database setup
     create_courses_table()
     create_users_table()
     insert_sample_courses()
-    insert_test_user()  # ensures users table is visible in SQLite
+
     df = load_courses()
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
-    # ----------------- SIDEBAR -----------------
-    st.sidebar.title("💡 About Us")
-    st.sidebar.markdown("""
-Welcome to **Course Recommender**!  
-
-- Discover courses that match your **interests and level**.  
-- Get **personalized recommendations** instantly.  
-- Securely store your preferences in our **SQL database**.  
-- Learn and grow with courses curated just for you!  
-    """)
-
-    # CSS Styling
-    st.markdown("""
-    <style>
-    .stApp { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; }
-    h1,h2,h3 { color: #00e5ff; text-align: center; }
-    div.stButton > button { background-color: #00e5ff; color: black; border-radius: 10px; padding: 0.6em 1.2em; font-weight: bold; border: none; }
-    div.stButton > button:hover { background-color: #00bcd4; color: white; }
-    .course-card { background-color: rgba(255,255,255,0.08); padding:18px; border-radius:15px; margin-bottom:15px; box-shadow:0px 4px 15px rgba(0,0,0,0.3);}
-    .highlight { color: #00e5ff; font-weight: bold; }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # ----------------- USER INPUT -----------------
     st.subheader("Welcome! Fill in your details to get recommendations")
 
     name = st.text_input("Your Name")
-    field_of_study = st.selectbox("Field of Study", ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"])
+    field_of_study = st.selectbox(
+        "Field of Study",
+        ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"]
+    )
     level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
-    duration = st.selectbox("Duration Preference", ["<1 month", "1-3 months", "3-6 months", "6+ months"])
+    duration = st.selectbox(
+        "Duration Preference",
+        ["<1 month", "1-3 months", "3-6 months", "6+ months"]
+    )
     mode = st.radio("Mode of Study", ["Online", "Offline", "Hybrid"])
 
     if st.button("Recommend Courses"):
@@ -143,30 +113,26 @@ Welcome to **Course Recommender**!
             st.warning("Please enter your name")
         else:
             save_user_info(name, field_of_study, level, duration, mode)
-            st.success(f"Hello {name}! Here are some recommended courses:")
+            st.success(f"Hello {name}! Your data is saved successfully ✅")
 
-            # Content-based recommendation
-            search_term = f"{field_of_study} {level} {mode} {duration}"
-            count_vect = CountVectorizer(stop_words="english")
-            vectors = count_vect.fit_transform(df["combined_features"])
-            search_vector = count_vect.transform([search_term])
-            similarity_scores = cosine_similarity(search_vector, vectors).flatten()
-            df["similarity"] = similarity_scores
-            recommendations = df.sort_values(by="similarity", ascending=False).head(7)
+            search_term = f"{field_of_study} {level}"
+            vectorizer = CountVectorizer(stop_words="english")
+            vectors = vectorizer.fit_transform(df["combined_features"])
+            search_vector = vectorizer.transform([search_term])
+            similarity = cosine_similarity(search_vector, vectors).flatten()
 
-            if recommendations.empty:
-                st.info("No courses found matching your preferences.")
-            else:
-                for _, row in recommendations.iterrows():
-                    st.markdown(f"""
-                    <div class="course-card">
-                        <h4>📘 {row['coursetitle']}</h4>
-                        <p><span class="highlight">Subject:</span> {row['subject']}</p>
-                        <p><span class="highlight">Level:</span> {row['level']}</p>
-                        <p><span class="highlight">Price:</span> ${row['price']}</p>
-                        <p><span class="highlight">Subscribers:</span> {row['num_subscribers']}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+            df["similarity"] = similarity
+            recommendations = df.sort_values("similarity", ascending=False).head(5)
+
+            for _, row in recommendations.iterrows():
+                st.markdown(f"""
+                **📘 {row['coursetitle']}**  
+                Subject: {row['subject']}  
+                Level: {row['level']}  
+                Price: ${row['price']}  
+                Subscribers: {row['num_subscribers']}  
+                ---
+                """)
 
 if __name__ == "__main__":
     main()
