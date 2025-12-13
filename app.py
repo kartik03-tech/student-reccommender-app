@@ -24,6 +24,17 @@ def main():
 
     menu = ["Home", "Recommend Courses", "About"]
     choice = st.sidebar.selectbox("Menu", menu)
+    elif choice == "View Backend":
+    st.subheader("📦 Backend: SQLite Database")
+
+    conn = get_db_connection()
+
+    st.write("### Courses Table")
+    courses_df = pd.read_sql("SELECT * FROM courses", conn)
+    st.dataframe(courses_df)
+
+    conn.close()
+
 
     # Load data from SQL database
     df = load_data()
@@ -98,3 +109,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
