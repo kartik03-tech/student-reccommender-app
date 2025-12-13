@@ -4,16 +4,20 @@ import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ----------------- DATABASE PATH -----------------
-DB_PATH = "courses.db"
+# ----------------- DATABASE PATHS -----------------
+COURSES_DB = "courses.db"   # read-only
+USERS_DB = "users.db"       # write-only
+
+# ----------------- DATABASE CONNECTIONS -----------------
+def get_courses_connection():
+    return sqlite3.connect(COURSES_DB, check_same_thread=False)
+
+def get_users_connection():
+    return sqlite3.connect(USERS_DB, check_same_thread=False)
 
 # ----------------- DATABASE FUNCTIONS -----------------
-def get_db_connection():
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
-
 def ensure_users_table():
-    """Ensure users table exists (IMPORTANT FIX)"""
-    conn = get_db_connection()
+    conn = get_users_connection()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -29,13 +33,13 @@ def ensure_users_table():
     conn.close()
 
 def load_courses():
-    conn = get_db_connection()
+    conn = get_courses_connection()
     df = pd.read_sql("SELECT * FROM courses", conn)
     conn.close()
     return df
 
 def save_user_info(name, field_of_study, level, duration, mode):
-    conn = get_db_connection()
+    conn = get_users_connection()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO users (name, field_of_study, level, duration, mode)
@@ -49,14 +53,14 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
 
-    # ✅ ENSURE users table exists (CRITICAL LINE)
+    # ✅ Ensure users table exists
     ensure_users_table()
 
-    # Load courses from existing DB
+    # Load courses
     try:
         df = load_courses()
-    except Exception as e:
-        st.error("Courses table not found in database.")
+    except:
+        st.error("courses.db or courses table not found.")
         st.stop()
 
     df["combined_features"] = (
@@ -82,13 +86,9 @@ def main():
             st.warning("Please enter your name")
             return
 
-        # Save user data safely
-        try:
-            save_user_info(name, field_of_study, level, duration, mode)
-            st.success("User data saved successfully ✅")
-        except Exception as e:
-            st.error("Failed to save user data.")
-            st.stop()
+        # Save user data
+        save_user_info(name, field_of_study, level, duration, mode)
+        st.success("User data saved successfully ✅")
 
         # Recommendation logic
         search_term = f"{field_of_study} {level}"
