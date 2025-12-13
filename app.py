@@ -42,6 +42,17 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
     
+    # ----------------- SIDEBAR -----------------
+    st.sidebar.title("💡 About Us")
+    st.sidebar.markdown("""
+Welcome to **Course Recommender**!  
+
+- Discover courses that match your **interests and level**.  
+- Get **personalized recommendations** instantly.  
+- Securely store your preferences in our **SQL database**.  
+- Learn and grow with courses curated just for you!  
+    """)
+
     # CSS Styling
     st.markdown("""
     <style>
@@ -102,7 +113,7 @@ def main():
     show_admin = st.checkbox("Admin Login")
     if show_admin:
         password = st.text_input("Enter Admin Password", type="password")
-        if password == "YourSecurePassword":  # Change this password!
+        if password == "K@rtik@12":  
             st.success("Access granted! Backend data is visible.")
             conn = get_db_connection()
 
@@ -114,10 +125,6 @@ def main():
             conn.close()
         else:
             st.error("Incorrect password. Access denied.")
-
-    # ----------------- About -----------------
-    st.subheader("About")
-    st.write("This application recommends courses based on your field of study and level using a SQL backend (SQLite) and cosine similarity.")
 
 if __name__ == "__main__":
     main()
