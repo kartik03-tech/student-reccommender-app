@@ -9,6 +9,41 @@ def get_db_connection():
     conn = sqlite3.connect("courses.db", check_same_thread=False)
     return conn
 
+def create_courses_table():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS courses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            coursetitle TEXT,
+            subject TEXT,
+            level TEXT,
+            price REAL,
+            num_subscribers INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def insert_sample_courses():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM courses")
+    if cursor.fetchone()[0] == 0:
+        sample_data = [
+            ("Python for Beginners", "Programming", "Beginner", 50, 1200),
+            ("Data Science 101", "Data Science", "Beginner", 100, 850),
+            ("Advanced AI", "Data Science", "Advanced", 200, 500),
+            ("Business Analytics", "Business", "Intermediate", 150, 700),
+            ("Art History Basics", "Arts", "Beginner", 30, 300)
+        ]
+        cursor.executemany(
+            "INSERT INTO courses (coursetitle, subject, level, price, num_subscribers) VALUES (?, ?, ?, ?, ?)",
+            sample_data
+        )
+    conn.commit()
+    conn.close()
+
 def load_courses():
     conn = get_db_connection()
     df = pd.read_sql("SELECT * FROM courses", conn)
@@ -29,7 +64,7 @@ def save_user_info(name, field_of_study, level, duration, mode):
             mode TEXT
         )
     """)
-    # Insert user info (hidden from Streamlit users)
+    # Insert user info
     cursor.execute("""
         INSERT INTO users (name, field_of_study, level, duration, mode)
         VALUES (?, ?, ?, ?, ?)
@@ -41,6 +76,12 @@ def save_user_info(name, field_of_study, level, duration, mode):
 def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
+
+    # ----------------- DATABASE SETUP -----------------
+    create_courses_table()
+    insert_sample_courses()
+    df = load_courses()
+    df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
     # ----------------- SIDEBAR -----------------
     st.sidebar.title("💡 About Us")
@@ -68,9 +109,6 @@ Welcome to **Course Recommender**!
     # ----------------- USER INPUT -----------------
     st.subheader("Welcome! Fill in your details to get recommendations")
 
-    df = load_courses()
-    df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
-
     name = st.text_input("Your Name")
     field_of_study = st.selectbox("Field of Study", ["Computer Science", "Data Science", "Business", "Arts", "Engineering", "Other"])
     level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
@@ -81,12 +119,12 @@ Welcome to **Course Recommender**!
         if not name.strip():
             st.warning("Please enter your name")
         else:
-            # Save user info to SQL (hidden from Streamlit)
+            # Save user info to SQL
             save_user_info(name, field_of_study, level, duration, mode)
             st.success(f"Hello {name}! Here are some recommended courses:")
 
-            # Content-based recommendation using cosine similarity
-            search_term = f"{field_of_study} {level}"
+            # Content-based recommendation
+            search_term = f"{field_of_study} {level} {mode} {duration}"
             count_vect = CountVectorizer(stop_words="english")
             vectors = count_vect.fit_transform(df["combined_features"])
             search_vector = count_vect.transform([search_term])
@@ -108,9 +146,14 @@ Welcome to **Course Recommender**!
                     </div>
                     """, unsafe_allow_html=True)
 
-    # ----------------- BACKEND HIDDEN -----------------
-    # Removed admin backend from Streamlit to hide all SQL tables
-    # Data is securely stored in 'courses.db' and can be accessed only via SQLite externally
+    # ----------------- HIDDEN ADMIN PANEL -----------------
+    admin_key = st.text_input("Enter admin key to view users", type="password")
+    if admin_key == "SECRET123":  # Replace with your secret key
+        st.subheader("👤 Users Table")
+        conn = get_db_connection()
+        users_df = pd.read_sql("SELECT * FROM users", conn)
+        conn.close()
+        st.dataframe(users_df)
 
 if __name__ == "__main__":
     main()
