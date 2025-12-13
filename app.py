@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import os
 
 # ----------------- DATABASE PATH -----------------
-DB_PATH = os.path.join(os.path.dirname(__file__), "courses.db")  # fixed absolute path
+DB_PATH = os.path.join(os.getcwd(), "courses.db")  # ensures single DB file
 
 # ----------------- DATABASE FUNCTIONS -----------------
 def get_db_connection():
@@ -64,6 +64,19 @@ def insert_sample_courses():
     conn.commit()
     conn.close()
 
+def insert_test_user():
+    """Insert a test user so users table is visible in SQLite immediately."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+            INSERT INTO users (name, field_of_study, level, duration, mode)
+            VALUES (?, ?, ?, ?, ?)
+        """, ("Test User", "Data Science", "Beginner", "1-3 months", "Online"))
+    conn.commit()
+    conn.close()
+
 def load_courses():
     conn = get_db_connection()
     df = pd.read_sql("SELECT * FROM courses", conn)
@@ -87,8 +100,9 @@ def main():
 
     # ----------------- DATABASE SETUP -----------------
     create_courses_table()
-    create_users_table()       # ensure users table exists at startup
+    create_users_table()
     insert_sample_courses()
+    insert_test_user()  # ensures users table is visible in SQLite
     df = load_courses()
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
 
@@ -128,7 +142,6 @@ Welcome to **Course Recommender**!
         if not name.strip():
             st.warning("Please enter your name")
         else:
-            # Save user info to SQL
             save_user_info(name, field_of_study, level, duration, mode)
             st.success(f"Hello {name}! Here are some recommended courses:")
 
