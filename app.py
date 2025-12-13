@@ -37,6 +37,23 @@ def save_user_info(name, field_of_study, level, duration, mode):
     conn.commit()
     conn.close()
 
+# Ensure users table exists before reading
+def ensure_users_table():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
 # ----------------- STREAMLIT APP -----------------
 def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
@@ -115,8 +132,11 @@ Welcome to **Course Recommender**!
         password = st.text_input("Enter Admin Password", type="password")
         if password == "K@rtik@12":  
             st.success("Access granted! Backend data is visible.")
+            
+            # Ensure users table exists before reading
+            ensure_users_table()
+            
             conn = get_db_connection()
-
             st.subheader("📦 Courses Database")
             st.dataframe(pd.read_sql("SELECT * FROM courses", conn))
 
