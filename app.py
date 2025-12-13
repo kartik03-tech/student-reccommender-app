@@ -3,10 +3,14 @@ import pandas as pd
 import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import os
+
+# ----------------- DATABASE PATH -----------------
+DB_PATH = os.path.join(os.path.dirname(__file__), "courses.db")  # fixed absolute path
 
 # ----------------- DATABASE FUNCTIONS -----------------
 def get_db_connection():
-    conn = sqlite3.connect("courses.db", check_same_thread=False)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     return conn
 
 def create_courses_table():
@@ -20,6 +24,22 @@ def create_courses_table():
             level TEXT,
             price REAL,
             num_subscribers INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def create_users_table():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
         )
     """)
     conn.commit()
@@ -53,18 +73,6 @@ def load_courses():
 def save_user_info(name, field_of_study, level, duration, mode):
     conn = get_db_connection()
     cursor = conn.cursor()
-    # Create users table if not exists
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            field_of_study TEXT,
-            level TEXT,
-            duration TEXT,
-            mode TEXT
-        )
-    """)
-    # Insert user info
     cursor.execute("""
         INSERT INTO users (name, field_of_study, level, duration, mode)
         VALUES (?, ?, ?, ?, ?)
@@ -79,6 +87,7 @@ def main():
 
     # ----------------- DATABASE SETUP -----------------
     create_courses_table()
+    create_users_table()       # ensure users table exists at startup
     insert_sample_courses()
     df = load_courses()
     df["combined_features"] = df["coursetitle"] + " " + df["subject"] + " " + df["level"]
@@ -145,15 +154,6 @@ Welcome to **Course Recommender**!
                         <p><span class="highlight">Subscribers:</span> {row['num_subscribers']}</p>
                     </div>
                     """, unsafe_allow_html=True)
-
-    # ----------------- HIDDEN ADMIN PANEL -----------------
-    admin_key = st.text_input("Enter admin key to view users", type="password")
-    if admin_key == "SECRET123":  # Replace with your secret key
-        st.subheader("👤 Users Table")
-        conn = get_db_connection()
-        users_df = pd.read_sql("SELECT * FROM users", conn)
-        conn.close()
-        st.dataframe(users_df)
 
 if __name__ == "__main__":
     main()
