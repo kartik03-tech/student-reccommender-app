@@ -72,17 +72,23 @@ def main():
 
         st.subheader("📚 Recommended Courses")
         for _, row in recommendations.iterrows():
-            st.markdown(f"""
-            *📘 {row['coursetitle']}* 
-            Subject: {row['subject']}  
-            Number of Lectures: {row['num_lectures']}  
-            Content Duration: {row['content_duration']} hours  
-            ---
-         """)
+            st.markdown(
+            f"""
+            <div style="font-size:12px; font-style:italic;">
+            📘 {row['coursetitle']}<br>
+            Subject: {row['subject']}<br>
+            Number of Lectures: {row['num_lectures']}<br>
+            Content Duration: {row['content_duration']} hours
+            <hr>
+            </div>
+            """,
+            unsafe_allow_html=True)
+
 
 
 if __name__ == "__main__":
     main()
+
 
 
 
