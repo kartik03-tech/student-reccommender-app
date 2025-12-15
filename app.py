@@ -1,10 +1,41 @@
 import streamlit as st
 import pandas as pd
+import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ----------------- CSV PATH -----------------
 CSV_PATH = "course.csv"
+
+# ----------------- DATABASE -----------------
+def get_connection():
+    return sqlite3.connect("users.db", check_same_thread=False)
+
+def create_users_table():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            field_of_study TEXT,
+            level TEXT,
+            duration TEXT,
+            mode TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def save_user(name, field_of_study, level, duration, mode):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO users (name, field_of_study, level, duration, mode)
+        VALUES (?, ?, ?, ?, ?)
+    """, (name, field_of_study, level, duration, mode))
+    conn.commit()
+    conn.close()
 
 # ----------------- LOAD COURSES -----------------
 def load_courses():
@@ -15,11 +46,14 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
 
+    # Create backend table
+    create_users_table()
+
     # Load courses
     try:
         df = load_courses()
     except:
-        st.error("courses.csv file not found.")
+        st.error("course.csv file not found.")
         st.stop()
 
     # Combine text features
@@ -56,7 +90,9 @@ def main():
             st.warning("Please enter your name")
             return
 
-        st.success(f"Hello {name}! Here are your recommendations 👇")
+        # ✅ Save user to backend
+        save_user(name, field_of_study, level, duration, mode)
+        st.success("User information saved successfully ✅")
 
         # Recommendation logic
         search_term = f"{field_of_study} {level}"
@@ -73,23 +109,17 @@ def main():
         st.subheader("📚 Recommended Courses")
         for _, row in recommendations.iterrows():
             st.markdown(
-            f"""
-            <div style="font-size:12px; font-style:italic;">
-            📘 {row['coursetitle']}<br>
-            Subject: {row['subject']}<br>
-            Number of Lectures: {row['num_lectures']}<br>
-            Content Duration: {row['content_duration']} hours
-            <hr>
-            </div>
-            """,
-            unsafe_allow_html=True)
-
-
+                f"""
+                <div style="font-size:12px; font-style:italic;">
+                    📘 {row['coursetitle']}<br>
+                    Subject: {row['subject']}<br>
+                    Number of Lectures: {row['num_lectures']}<br>
+                    Content Duration: {row['content_duration']} hours
+                    <hr>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
