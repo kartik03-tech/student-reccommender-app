@@ -1,41 +1,48 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ----------------- CSV PATH -----------------
 CSV_PATH = "course.csv"
 
-# ----------------- DATABASE -----------------
+# ----------------- DATABASE (MySQL via st.connection) -----------------
 def get_connection():
-    return sqlite3.connect("users.db", check_same_thread=False)
+    # Uses [connections.mysql] from .streamlit/secrets.toml
+    return st.connection("mysql", type="sql")
 
 def create_users_table():
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            field_of_study TEXT,
-            level TEXT,
-            duration TEXT,
-            mode TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    with conn.session as session:
+        session.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100),
+                field_of_study VARCHAR(50),
+                level VARCHAR(50),
+                duration VARCHAR(20),
+                mode VARCHAR(20)
+            )
+        """)
+        session.commit()
 
 def save_user(name, field_of_study, level, duration, mode):
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO users (name, field_of_study, level, duration, mode)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, field_of_study, level, duration, mode))
-    conn.commit()
-    conn.close()
+    with conn.session as session:
+        session.execute(
+            """
+            INSERT INTO users (name, field_of_study, level, duration, mode)
+            VALUES (:name, :field_of_study, :level, :duration, :mode)
+            """,
+            {
+                "name": name,
+                "field_of_study": field_of_study,
+                "level": level,
+                "duration": duration,
+                "mode": mode,
+            },
+        )
+        session.commit()
 
 # ----------------- LOAD COURSES -----------------
 def load_courses():
@@ -46,7 +53,7 @@ def main():
     st.set_page_config(page_title="Course Recommender", layout="centered")
     st.title("🎓 Course Recommendation System")
 
-    # Create backend table
+    # Create backend table in MySQL
     create_users_table()
 
     # Load courses
@@ -90,7 +97,7 @@ def main():
             st.warning("Please enter your name")
             return
 
-        # ✅ Save user to backend
+        # ✅ Save user to MySQL
         save_user(name, field_of_study, level, duration, mode)
         st.success("User information saved successfully ✅")
 
