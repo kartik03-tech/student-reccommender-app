@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ----------------- CSV PATH -----------------
-CSV_PATH = "C:/Users/Kartik Bhosle/Web/course_recommend/data/course.csv"
+CSV_PATH = "course.csv"
 # ----------------- DATABASE -----------------
 def get_connection():
     return sqlite3.connect("users.db", check_same_thread=False)
@@ -122,3 +122,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
