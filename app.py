@@ -4,7 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # ----------------- CSV PATH -----------------
-CSV_PATH = "courses.csv"
+CSV_PATH = "course.csv"
 
 # ----------------- LOAD COURSES -----------------
 def load_courses():
@@ -83,4 +83,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
