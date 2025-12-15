@@ -73,7 +73,7 @@ def main():
         st.subheader("📚 Recommended Courses")
         for _, row in recommendations.iterrows():
             st.markdown(f"""
-            **📘 {row['coursetitle']}**  
+            *📘 {row['coursetitle']}* 
             Subject: {row['subject']}  
             Number of Lectures: {row['num_lectures']}  
             Content Duration: {row['content_duration']} hours  
@@ -83,6 +83,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
