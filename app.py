@@ -75,13 +75,14 @@ def main():
             st.markdown(f"""
             **📘 {row['coursetitle']}**  
             Subject: {row['subject']}  
-            Level: {row['level']}  
-            Price: ${row['price']}  
-            Subscribers: {row['num_subscribers']}  
+            Number of Lectures: {row['num_lectures']}  
+            Content Duration: {row['content_duration']} hours  
             ---
-            """)
+         """)
+
 
 if __name__ == "__main__":
     main()
+
 
 
